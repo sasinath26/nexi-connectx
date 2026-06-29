@@ -5,17 +5,111 @@ Enterprise integration and workflow orchestration Proof of Concept (POC) built w
 ## Architecture
 
 ```
-File / SFTP / REST / Kafka
-        ↓
-Apache Camel Routes
-        ↓
-Transform (CSV/XML/JSON) → Validate → Enrich
-        ↓
-PostgreSQL (records + execution tracking)
-        ↓
-Kafka Outbound + Notifications (Email/Slack)
-        ↓
-React Dashboard (monitoring & config)
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              NexiConnectX Platform                              │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐   │
+│  │                        INBOUND SOURCES  (Triggers)                      │   │
+│  │                                                                         │   │
+│  │   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌───────────┐ │   │
+│  │   │  File Upload  │  │  SFTP Read   │  │   REST API   │  │   Kafka   │ │   │
+│  │   │  (Local/SMB) │  │  (Remote FS) │  │  (HTTP POST) │  │ Consumer  │ │   │
+│  │   └──────┬───────┘  └──────┬───────┘  └──────┬───────┘  └─────┬─────┘ │   │
+│  └──────────┼─────────────────┼─────────────────┼────────────────┼───────┘   │
+│             └─────────────────┴─────────────────┴────────────────┘           │
+│                                         │                                       │
+│                                         ▼                                       │
+│  ┌──────────────────────────────────────────────────────────────────────────┐  │
+│  │                    APACHE CAMEL  (Dynamic Route Engine)                  │  │
+│  │                                                                          │  │
+│  │   Workflow definitions are stored in PostgreSQL.                        │  │
+│  │   On ACTIVATE → Camel builds and starts the route at runtime.           │  │
+│  │                                                                          │  │
+│  │   ┌──────────────────────────────────────────────────────────────────┐  │  │
+│  │   │                      PROCESSING PIPELINE                         │  │  │
+│  │   │                                                                  │  │  │
+│  │   │  ┌──────────────┐   ┌──────────────┐   ┌──────────────────────┐ │  │  │
+│  │   │  │  TRANSFORM   │──▶│   VALIDATE   │──▶│       ENRICH         │ │  │  │
+│  │   │  │              │   │              │   │                      │ │  │  │
+│  │   │  │ CSV → JSON   │   │ Field rules  │   │ Add metadata / tags  │ │  │  │
+│  │   │  │ XML → JSON   │   │ Schema check │   │ Lookup enrichment    │ │  │  │
+│  │   │  │ JSON remap   │   │ Biz rules    │   │                      │ │  │  │
+│  │   │  └──────────────┘   └──────────────┘   └──────────────────────┘ │  │  │
+│  │   └──────────────────────────────────────────────────────────────────┘  │  │
+│  └──────────────────────────────┬───────────────────────────────────────────┘  │
+│                                 │                                               │
+│             ┌───────────────────┼───────────────────┐                          │
+│             ▼                   ▼                   ▼                          │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────────────┐ │
+│  │  OUTBOUND SINKS  │  │  NOTIFICATIONS   │  │   CONTROL FLOW               │ │
+│  │                  │  │                  │  │                              │ │
+│  │  PostgreSQL      │  │  Email (SMTP)    │  │  Parallel Split / Join       │ │
+│  │  Kafka Publish   │  │  Slack Webhook   │  │  Conditional Branch          │ │
+│  │  SQL Execute     │  │                  │  │  Dead Letter Queue (DLQ)     │ │
+│  └──────────────────┘  └──────────────────┘  └──────────────────────────────┘ │
+│                                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────     │
+│                                                                                 │
+│  ┌───────────────────────────────┐   ┌─────────────────────────────────────┐  │
+│  │     REACT FRONTEND            │   │       MCP SERVER  (AI Gateway)      │  │
+│  │     localhost:5173            │   │       Python · FastMCP · stdio      │  │
+│  │                               │   │                                     │  │
+│  │  • Dashboard & Metrics        │   │  Cursor / Claude Code               │  │
+│  │  • Workflow Builder (DAG)     │   │       │                             │  │
+│  │  • Execution History          │   │       ▼  natural language           │  │
+│  │  • Logs & Monitoring          │   │  12 MCP Tools ──▶ REST API :8080   │  │
+│  │  • Plugin Configuration       │   │                                     │  │
+│  └───────────────┬───────────────┘   └──────────────────┬──────────────────┘  │
+│                  │  REST / HTTP                          │  REST / HTTP        │
+│                  └──────────────────┬────────────────────┘                     │
+│                                     ▼                                           │
+│  ┌──────────────────────────────────────────────────────────────────────────┐  │
+│  │              SPRING BOOT BACKEND   localhost:8080                        │  │
+│  │                                                                          │  │
+│  │   REST Controllers  ·  Camel Context  ·  Plugin Registry                │  │
+│  │   Workflow Engine   ·  Execution Tracker  ·  Route Control              │  │
+│  └──────────────────────────────────┬───────────────────────────────────────┘  │
+│                                     │  JPA / JDBC                              │
+│                                     ▼                                           │
+│  ┌──────────────────────────────────────────────────────────────────────────┐  │
+│  │              POSTGRESQL  (dolphinscheduler · schema: nexi_connectx)      │  │
+│  │                                                                          │  │
+│  │   workflow_definitions  ·  workflow_nodes  ·  workflow_edges             │  │
+│  │   workflow_executions   ·  execution_logs  ·  plugin_configurations      │  │
+│  └──────────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Component Summary
+
+| Component | Tech | URL |
+|-----------|------|-----|
+| Backend API | Spring Boot 3 + Apache Camel | `http://localhost:8080` |
+| Swagger UI | SpringDoc OpenAPI | `http://localhost:8080/swagger-ui.html` |
+| Frontend | React 18 + Vite + React Flow | `http://localhost:5173` |
+| MCP Server | Python 3.10 + FastMCP | stdio (auto-started by Cursor) |
+| Database | PostgreSQL | `18.212.49.148:5433` |
+| Message Broker | Apache Kafka | `localhost:9092` (optional) |
+
+### Data Flow
+
+```
+User / AI Agent
+     │
+     ├──▶ React UI (drag-and-drop workflow builder)
+     │          │
+     └──▶ MCP Server (natural language → 12 tools)
+                │
+                ▼
+        Spring Boot REST API  (:8080)
+                │
+                ├──▶ Read workflow definition from PostgreSQL
+                │
+                ├──▶ Apache Camel: build route dynamically at runtime
+                │
+                ├──▶ Execute: Source → Transform → Validate → Sink
+                │
+                └──▶ Write execution logs back to PostgreSQL
 ```
 
 ## Dynamic Workflows
