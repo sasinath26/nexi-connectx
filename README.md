@@ -1,6 +1,6 @@
 # Nexi ConnectX
 
-Enterprise integration and workflow orchestration Proof of Concept (POC) built with **Apache Camel**, **Spring Boot**, **Kafka**, **PostgreSQL**, and a **React** monitoring dashboard.
+NexiConnectX is an enterprise integration and workflow orchestration POC that lets you build, deploy, and monitor data pipelines through a visual UI, a REST API, or plain English via an AI agent — no code changes required.
 
 ## Architecture
 
@@ -298,7 +298,6 @@ NexiConnectX/
 │       └── service/
 ├── frontend/                # React dashboard
 ├── data/input/              # Sample workflow files
-└── docker-compose.yml       # Local Kafka
 ```
 
 ## License
