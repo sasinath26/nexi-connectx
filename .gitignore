@@ -12,6 +12,19 @@ frontend/dist/
 data/processed/
 data/error/
 
+# H2 embedded database files
+backend/data/*.mv.db
+backend/data/*.trace.db
+backend/data/*.lock.db
+
+# Camel lock files
+*.camelLock
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
 # Env
 .env
 *.log
