@@ -103,12 +103,6 @@ $env:POSTGRESQL_HOST="localhost"
 
 ## Quick Start
 
-### 1. Start Kafka (optional)
-
-```bash
-docker-compose up -d
-```
-
 ### 2. Start Backend
 
 ```powershell
