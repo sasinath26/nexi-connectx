@@ -1,0 +1,24 @@
+package com.nexi.connectx.workflow.model;
+
+public enum PluginType {
+    FILE_UPLOAD,
+    SFTP_READ,
+    REST_API,
+    KAFKA_CONSUMER,
+    MANUAL_TRIGGER,
+    CSV_TRANSFORM,
+    XML_TRANSFORM,
+    JSON_TRANSFORM,
+    JSON_VALIDATE,
+    DATA_ENRICH,
+    DB_INSERT,
+    KAFKA_PUBLISH,
+    EMAIL_NOTIFICATION,
+    SLACK_NOTIFICATION,
+    PARALLEL_SPLIT,
+    PARALLEL_JOIN,
+    CONDITIONAL_BRANCH,
+    FILE_READ,
+    SHELL_EXEC,
+    SQL_EXEC
+}

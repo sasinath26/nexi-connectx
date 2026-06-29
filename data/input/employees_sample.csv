@@ -1,0 +1,7 @@
+employeeId,firstName,lastName,email,department,salary
+101,Abhishek,Yadav,abhishek@gmail.com,IT,55000
+102,Rahul,Sharma,rahul@gmail.com,HR,45000
+103,Priya,Singh,priya@gmail.com,Finance,60000
+104,Amit,Verma,amit@gmail.com,DevOps,70000
+106,Neha,sharma,neha@gmail.com,saleWomen,550
+108,Amit,Yadav,amit@gmail.com,JAva,70000

@@ -1,0 +1,9 @@
+[
+  {
+    "id": "ORD-001",
+    "name": "Enterprise Order",
+    "email": "orders@enterprise.com",
+    "type": "GENERAL",
+    "source": "JSON"
+  }
+]

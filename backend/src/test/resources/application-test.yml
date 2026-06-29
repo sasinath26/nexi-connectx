@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:nexiconnectx;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        default_schema: public
+
+nexi:
+  connectx:
+    file:
+      input-dir: ./target/test-data/input
+      processed-dir: ./target/test-data/processed
+      error-dir: ./target/test-data/error

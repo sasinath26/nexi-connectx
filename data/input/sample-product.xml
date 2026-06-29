@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<products>
+  <product>
+    <id>P-100</id>
+    <name>Integration Module</name>
+    <email>product@nexiconnectx.com</email>
+    <type>GENERAL</type>
+    <source>XML</source>
+  </product>
+</products>

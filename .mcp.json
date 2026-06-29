@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "nexi-connectx": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["${CLAUDE_PROJECT_DIR}/mcp-server/server.py"],
+      "env": {
+        "NEXI_API_URL": "http://localhost:8080"
+      }
+    }
+  }
+}

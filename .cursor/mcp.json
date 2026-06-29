@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "nexi-connectx": {
+      "command": "python",
+      "args": ["mcp-server/server.py"],
+      "env": {
+        "NEXI_API_URL": "http://localhost:8080"
+      }
+    }
+  }
+}

@@ -1,0 +1,102 @@
+# Active profile selects deployment environment (dev | qa | stage | prod).
+# Example: mvn spring-boot:run -Dspring-boot.run.profiles=stage
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  application:
+    name: nexi-connectx
+  datasource:
+    url: jdbc:postgresql://${POSTGRESQL_HOST:44.203.168.172}:${POSTGRESQL_PORT:5433}/${POSTGRESQL_DATABASE:dolphinscheduler}?currentSchema=nexi_connectx&connectTimeout=120&socketTimeout=120
+    username: ${POSTGRESQL_USERNAME:root}
+    password: ${POSTGRESQL_PASSWORD:root}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 120000
+      maximum-pool-size: 10
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: nexi_connectx
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+camel:
+  springboot:
+    name: NexiConnectX
+    main-run-controller: true
+
+nexi:
+  connectx:
+    file:
+      input-dir: ${FILE_INPUT_DIR:./data/input}
+      processed-dir: ${FILE_PROCESSED_DIR:./data/processed}
+      error-dir: ${FILE_ERROR_DIR:./data/error}
+    workflows:
+      base-dir: ${WORKFLOWS_BASE_DIR:./workflows}
+    sftp:
+      enabled: ${SFTP_ENABLED:false}
+      host: ${SFTP_HOST:localhost}
+      port: ${SFTP_PORT:22}
+      username: ${SFTP_USERNAME:}
+      password: ${SFTP_PASSWORD:}
+      remote-dir: ${SFTP_REMOTE_DIR:/incoming}
+    kafka:
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      consumer-topic: ${KAFKA_CONSUMER_TOPIC:nexi-connectx-inbound}
+      producer-topic: ${KAFKA_PRODUCER_TOPIC:nexi-connectx-outbound}
+      dlq-topic: ${KAFKA_DLQ_TOPIC:nexi-connectx-dlq}
+      group-id: ${KAFKA_GROUP_ID:nexi-connectx-group}
+    rest:
+      external-api-url: ${EXTERNAL_API_URL:https://jsonplaceholder.typicode.com/posts/1}
+    notification:
+      email:
+        enabled: ${EMAIL_ENABLED:false}
+        from: ${EMAIL_FROM:noreply@nexiconnectx.com}
+        to: ${EMAIL_TO:admin@nexiconnectx.com}
+      slack:
+        enabled: ${SLACK_ENABLED:false}
+        webhook-url: ${SLACK_WEBHOOK_URL:}
+    retry:
+      max-attempts: ${RETRY_MAX_ATTEMPTS:3}
+      delay-ms: ${RETRY_DELAY_MS:2000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,camelroutes
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    root: INFO
+    com.nexi.connectx: DEBUG
+    org.apache.camel: INFO
